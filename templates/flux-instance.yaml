@@ -1,0 +1,54 @@
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: {{ .Release.Namespace }}
+spec:
+  distribution:
+    version: "2.x"
+    registry: "ghcr.io/fluxcd"
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+    - image-reflector-controller
+    - image-automation-controller
+  cluster:
+    type: kubernetes
+    multitenant: false
+    networkPolicy: true
+    domain: "cluster.local"
+  kustomize:
+    decryption:
+      provider: sops
+    patches:
+      - target:
+          kind: Deployment
+          name: "(source-controller|kustomize-controller|helm-controller|notification-controller|image-reflector-controller|image-automation-controller)"
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/resources
+            value:
+              requests:
+                cpu: 250m
+                memory: 750Mi
+                ephemeral-storage: 1Gi
+              limits:
+                cpu: 250m
+                memory: 750Mi
+                ephemeral-storage: 1Gi
+      - target:
+          kind: ServiceAccount
+          name: kustomize-controller
+        patch: |
+          - op: add
+            path: /metadata/annotations/iam.gke.io~1gcp-service-account
+            value: "{{ .Values.fluxGsaEmail }}"
+  sync:
+    kind: GitRepository
+    provider: github
+    pullSecret: flux-system
+    ref: "refs/heads/master"
+    url: "{{ .Values.repoUrl }}"
+    path: "{{ .Values.syncPath }}"

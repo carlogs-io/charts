@@ -1,0 +1,12 @@
+# Default values for cluster-bootstrap.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+repoUrl: "https://github.com/your-org/your-repo.git"
+syncPath: "clusters/your-cluster"
+fluxGsaEmail: ""
+githubApp:
+  id: ""
+  installationId: ""
+  privateKey: ""
+  webhookToken: ""
