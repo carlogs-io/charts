@@ -3,6 +3,9 @@ kind: FluxInstance
 metadata:
   name: flux
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
 spec:
   distribution:
     version: "2.x"
